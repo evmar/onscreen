@@ -4,6 +4,10 @@ import cgi
 import cgitb
 import cStringIO
 import os
+try:
+    import simplejson as json
+except:
+    import json
 import sys
 cgitb.enable()
 
@@ -33,24 +37,50 @@ path = os.environ['PATH_INFO']
 def frontpage():
     cgi.print_environ()
 
-def cycle():
+def current_json():
     query = Entry.gql('ORDER BY date DESC')
     entries = query.fetch(3)
     entry = entries[0]
+    return json.dumps({
+            'image': '/image/%d' % entry.key().id(),
+            'owner': entry.owner.nickname()
+            })
+
+def cycle():
     print """<head>
 <link rel=stylesheet href=static/style.css>
-<meta http-equiv=refresh content=6>
 </head>
 
 <table width=100%% height=100%%>
 <tr><td align=center valign=center>
-<img src='%(url)s'><br>
-<div id=caption>posted by %(nickname)s</div>
+<img id=image><br>
+<div id=caption>posted by <span id=owner></span></div>
 </td></tr></table>
-""" % {
-        'nickname': cgi.escape(entry.owner.nickname()),
-        'url': '/image/%d' % entry.key().id(),
-        }
+<script>
+function display(state) {
+  document.getElementById('image').src = state.image;
+  document.getElementById('owner').innerHTML = state.owner;
+}
+function update() {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200)
+        display(JSON.parse(xhr.responseText));
+      scheduleUpdate();
+    }
+  }
+  xhr.open('GET', '/json', true);
+  xhr.send();
+}
+function scheduleUpdate() {
+  setTimeout(update, 3 * 1000);
+}
+
+display(%s);
+scheduleUpdate();
+</script>
+""" % current_json()
 
 def new():
     user = users.get_current_user()
@@ -75,7 +105,7 @@ def new():
         form = cgi.FieldStorage()
         image = form['image'].value
         if image:
-            print '%d bytes' % len(image)
+            print 'accepted %d bytes of image' % len(image)
             entry = Entry(owner=user, image=image)
             entry.put()
         else:
@@ -99,6 +129,9 @@ try:
                 raise Http404()
             headers = {}
             print entry.image
+        elif path == '/json':
+            headers = {'Content-Type': 'application/json'}
+            print current_json()
         else:
             raise Http404()
         output = sys.stdout.getvalue()
