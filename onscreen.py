@@ -9,10 +9,14 @@ try:
 except:
     import json
 import sys
+from datetime import datetime, timedelta
 cgitb.enable()
 
 from google.appengine.ext import db
 from google.appengine.api import users
+
+DISPLAY_N_RECENT = 5
+CYCLE_TIME = 10
 
 class Http302(Exception):
     def __init__(self, url):
@@ -32,15 +36,36 @@ class Entry(db.Model):
     date = db.DateTimeProperty(auto_now_add=True)
     image = db.BlobProperty()
 
+class State(db.Model):
+    slot = db.IntegerProperty()
+    since = db.DateTimeProperty()
+
+
 path = os.environ['PATH_INFO']
+
+def get_current_entry():
+    query = Entry.gql('ORDER BY date DESC')
+    entries = query.fetch(DISPLAY_N_RECENT)
+
+    state = State.gql('').get()
+    if not state:
+        state = State(slot=0, since=datetime.now())
+        state.put()
+    else:
+        now = datetime.now()
+        if now - state.since > timedelta(seconds=CYCLE_TIME):
+            state.slot = (state.slot + 1) % min(len(entries), DISPLAY_N_RECENT)
+            state.since = now
+            state.put()
+
+    return entries[state.slot]
+
 
 def frontpage():
     cgi.print_environ()
 
 def current_json():
-    query = Entry.gql('ORDER BY date DESC')
-    entries = query.fetch(3)
-    entry = entries[0]
+    entry = get_current_entry()
     return json.dumps({
             'image': '/image/%d' % entry.key().id(),
             'owner': entry.owner.nickname()
@@ -136,8 +161,6 @@ try:
             raise Http404()
         output = sys.stdout.getvalue()
         sys.stdout.close()
-    except Exception as e:
-        raise e
     finally:
         sys.stdout = orig_stdout
     if len(output) == 0:
