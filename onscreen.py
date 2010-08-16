@@ -4,10 +4,7 @@ import cgi
 import cgitb
 import cStringIO
 import os
-try:
-    import simplejson as json
-except:
-    import json
+from django.utils import simplejson as json
 import sys
 from datetime import datetime, timedelta
 cgitb.enable()
@@ -82,6 +79,15 @@ def cycle():
 <div id=caption>posted by <span id=owner></span></div>
 </td></tr></table>
 <script>
+
+if (!('JSON' in window)) {
+  // Opera FFFFUUUUUU
+  JSON = {};
+  JSON.parse = function(text) {
+    return eval('(' + text + ')');
+  };
+}
+
 function display(state) {
   document.getElementById('image').src = state.image;
   document.getElementById('owner').innerHTML = state.owner;
@@ -176,10 +182,10 @@ try:
         print '%s: %s' % (key, val)
     print
     print output
-except Http302 as e:
+except Http302, e:
     print """Status: 302 Redirect
 Location: %s""" % e.url
-except Http400 as e:
+except Http400, e:
     print """Status: 400 Bad Request
 Content-Type: text/plain
 
@@ -189,7 +195,7 @@ except Http404:
 Content-Type: text/plain
 
 Not Found"""
-except Http500 as e:
+except Http500, e:
     print """Status: 500 Internal Server Error
 Content-Type: text/plain
 
