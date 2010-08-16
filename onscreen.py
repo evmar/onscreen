@@ -13,7 +13,7 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 DISPLAY_N_RECENT = 5
-CYCLE_TIME = 20
+CYCLE_TIME = 30
 
 class Http302(Exception):
     def __init__(self, url):
