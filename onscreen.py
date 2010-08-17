@@ -29,7 +29,7 @@ class State(db.Model):
 def get_current_entry():
     now = datetime.now()
     query = Entry.gql(' WHERE date > :date ORDER BY date DESC',
-                      date=now + timedelta(hours=ENTRIES_NEWER_THAN_HOURS))
+                      date=now - timedelta(hours=ENTRIES_NEWER_THAN_HOURS))
     entries = query.fetch(DISPLAY_N_RECENT)
 
     if not entries:
@@ -60,13 +60,13 @@ def current_json():
         return "{}"
 
 
-def new():
+def new(path):
     user = users.get_current_user()
 
     method = os.environ['REQUEST_METHOD']
     if method == 'GET':
         if not user:
-            raise web.Special(users.create_login_url(path))
+            raise web.Special(302, users.create_login_url(path))
         else:
             print template.render('templates/new.tmpl', {})
     elif method == 'POST':
@@ -78,6 +78,8 @@ def new():
             print 'accepted %d bytes of image' % len(image)
             entry = Entry(owner=user, image=image)
             entry.put()
+        elif 'url' in form:
+            print url
         else:
             raise web.Error(400, 'no image included')
 
@@ -89,12 +91,12 @@ def handle_request(path):
                               { 'json': current_json(),
                                 'cycle': 1 })
     elif path == '/new':
-        headers = new()
+        headers = new(path)
     elif path.startswith('/image/'):
         id = int(path[len('/image/'):])
         entry = Entry.get_by_id(id)
         if not entry:
-            raise Http404()
+            raise web.Error(404)
         headers = {}
         print entry.image
     elif path == '/json':

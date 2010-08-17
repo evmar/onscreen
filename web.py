@@ -5,6 +5,7 @@ import sys
 import cStringIO
 import cgitb
 cgitb.enable()
+import traceback
 
 class Error(Exception):
     def __init__(self, code, text=None):
@@ -38,12 +39,13 @@ def run(f):
         print
         print output
     except Error, e:
-        status_text = {
+        error_codes = {
             302: 'Redirect',
             400: 'Bad Request',
             404: 'Not Found',
             500: 'Internal Server Error'
-            }[e.code]
+            }
+        status_text = error_codes.get(e.code, e.code)
         print "Status: %d %s" % (e.code, status_text)
         if e.code == 302:
             print "Location:", e.text
