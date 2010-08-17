@@ -14,6 +14,7 @@ from google.appengine.ext.webapp import template
 
 DISPLAY_N_RECENT = 5
 CYCLE_TIME = 30
+ENTRIES_NEWER_THAN_HOURS = 12
 
 class Entry(db.Model):
     owner = db.UserProperty(required=True)
@@ -26,16 +27,21 @@ class State(db.Model):
 
 
 def get_current_entry():
-    query = Entry.gql('ORDER BY date DESC')
+    now = datetime.now()
+    query = Entry.gql(' WHERE date > :date ORDER BY date DESC',
+                      date=now + timedelta(hours=ENTRIES_NEWER_THAN_HOURS))
     entries = query.fetch(DISPLAY_N_RECENT)
+
+    if not entries:
+        return None
 
     state = State.gql('').get()
     if not state:
-        state = State(slot=0, since=datetime.now())
+        state = State(slot=0, since=now)
         state.put()
     else:
-        now = datetime.now()
-        if now - state.since > timedelta(seconds=CYCLE_TIME):
+        if (now - state.since > timedelta(seconds=CYCLE_TIME)  # time to cycle?
+            or state.slot >= len(entries)):                    # entry expired?
             state.slot = (state.slot + 1) % min(len(entries), DISPLAY_N_RECENT)
             state.since = now
             state.put()
@@ -45,10 +51,14 @@ def get_current_entry():
 
 def current_json():
     entry = get_current_entry()
-    return json.dumps({
+    if entry:
+        return json.dumps({
             'image': '/image/%d' % entry.key().id(),
-            'owner': entry.owner.nickname()
+            'owner': entry.owner.nickname(),
             })
+    else:
+        return "{}"
+
 
 def new():
     user = users.get_current_user()

@@ -30,8 +30,13 @@ if (!('JSON' in window)) {
 }
 
 function display(state) {
-  document.getElementById('image').src = state.image;
-  document.getElementById('owner').innerHTML = state.owner;
+  if ('image' in state) {
+    document.getElementById('image').src = state.image;
+    document.getElementById('owner').innerHTML = state.owner;
+  } else {
+    document.getElementById('image').src = 'XXX';
+    document.getElementById('owner').innerHTML = 'RAN OUT OF IMAGES :(';
+  }
 }
 function update() {
   var xhr = new XMLHttpRequest();
