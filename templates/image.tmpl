@@ -5,7 +5,7 @@
 body {
   font-family: sans-serif;
 }
-#image {
+#display {
   -webkit-box-shadow: 5px 5px 4px #777;
   margin-bottom: 20px;
 }
@@ -15,7 +15,7 @@ body {
 </style>
 </head>
 <table width=100% height=100%><tr><td align=center valign=center>
-<img id=image><br>
+<div id=display><br>
 <div id=caption>posted by <span id=owner></span></div>
 </td></tr></table>
 
@@ -30,8 +30,14 @@ if (!('JSON' in window)) {
 }
 
 function display(state) {
-  if ('image' in state) {
-    document.getElementById('image').src = state.image;
+  if ('url' in state) {
+    document.getElementById('display').innerHTML =
+      '<object width="480" height="385"><param name="movie" value="' + state.url + '"></param></object>';
+    document.getElementById('owner').innerHTML = state.owner;
+
+  } else if ('image' in state) {
+    document.getElementById('display').innerHTML =
+        '<img src=' + state.image + '>';
     document.getElementById('owner').innerHTML = state.owner;
   } else {
     document.getElementById('image').src = 'XXX';

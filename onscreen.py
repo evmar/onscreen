@@ -20,6 +20,7 @@ class Entry(db.Model):
     owner = db.UserProperty(required=True)
     date = db.DateTimeProperty(auto_now_add=True)
     image = db.BlobProperty()
+    url = db.StringProperty()
 
 class State(db.Model):
     slot = db.IntegerProperty()
@@ -51,11 +52,16 @@ def get_current_entry():
 
 def current_json():
     entry = get_current_entry()
-    if entry:
+    if entry and entry.url:
         return json.dumps({
-            'image': '/image/%d' % entry.key().id(),
-            'owner': entry.owner.nickname(),
-            })
+                'url': entry.url,
+                'owner': entry.owner.nickname(),
+                })
+    elif entry:
+        return json.dumps({
+                'image': '/image/%d' % entry.key().id(),
+                'owner': entry.owner.nickname(),
+                })
     else:
         return "{}"
 
@@ -79,9 +85,11 @@ def new(path):
             entry = Entry(owner=user, image=image)
             entry.put()
         elif 'url' in form:
-            print url
+            print 'accepted url'
+            entry = Entry(owner=user, url=form['url'].value)
+            entry.put()
         else:
-            raise web.Error(400, 'no image included')
+            raise web.Error(400, 'no image/url included')
 
 def handle_request(path):
     if path == '/':

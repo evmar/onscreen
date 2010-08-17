@@ -5,6 +5,7 @@ body {
 }
 input {
   font-family: Inconsolata, sans-serif;
+  font-size: 100%;
 }
 
 h1 {

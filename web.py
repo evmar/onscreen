@@ -26,7 +26,7 @@ def run(f):
         finally:
             sys.stdout = orig_stdout
         if len(output) == 0:
-            raise web.Error(500, 'no output')
+            raise Error(500, 'no output')
         print 'Status: 200 OK'
         if headers is None:
             headers = {
