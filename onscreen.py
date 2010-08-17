@@ -11,6 +11,7 @@ cgitb.enable()
 
 from google.appengine.ext import db
 from google.appengine.api import users
+from google.appengine.ext.webapp import template
 
 DISPLAY_N_RECENT = 5
 CYCLE_TIME = 30
@@ -58,60 +59,12 @@ def get_current_entry():
     return entries[state.slot]
 
 
-def frontpage():
-    cgi.print_environ()
-
 def current_json():
     entry = get_current_entry()
     return json.dumps({
             'image': '/image/%d' % entry.key().id(),
             'owner': entry.owner.nickname()
             })
-
-def cycle():
-    print """<head>
-<link rel=stylesheet href=static/style.css>
-</head>
-
-<table width=100%% height=100%%>
-<tr><td align=center valign=center>
-<img id=image><br>
-<div id=caption>posted by <span id=owner></span></div>
-</td></tr></table>
-<script>
-
-if (!('JSON' in window)) {
-  // Opera FFFFUUUUUU
-  JSON = {};
-  JSON.parse = function(text) {
-    return eval('(' + text + ')');
-  };
-}
-
-function display(state) {
-  document.getElementById('image').src = state.image;
-  document.getElementById('owner').innerHTML = state.owner;
-}
-function update() {
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4) {
-      if (xhr.status == 200)
-        display(JSON.parse(xhr.responseText));
-      scheduleUpdate();
-    }
-  }
-  xhr.open('GET', '/json', true);
-  xhr.send();
-}
-function scheduleUpdate() {
-  setTimeout(update, 3 * 1000);
-}
-
-display(%s);
-scheduleUpdate();
-</script>
-""" % current_json()
 
 def new():
     user = users.get_current_user()
@@ -121,15 +74,7 @@ def new():
         if not user:
             raise Http302(users.create_login_url(path))
         else:
-            print """<head>
-<link rel=stylesheet href=static/style.css>
-</head>
-
-<form method=post enctype=multipart/form-data>
-<input name=image type=file><br>
-<input type=submit>
-</form>
-"""
+            print template.render('templates/new.tmpl', {})
     elif method == 'POST':
         if not user:
             raise Http400('must login')
@@ -148,9 +93,10 @@ try:
         orig_stdout = sys.stdout
         sys.stdout = cStringIO.StringIO()
         if path == '/':
-            headers = frontpage()
+            print template.render('templates/frontpage.tmpl', {})
         elif path == '/cycle':
-            headers = cycle()
+            print template.render('templates/cycler.tmpl',
+                                  { 'json':current_json() })
         elif path == '/new':
             headers = new()
         elif path.startswith('/image/'):

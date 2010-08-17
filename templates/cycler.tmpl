@@ -1,0 +1,42 @@
+<!-- intentionally not html5 so vertical centering works -->
+<head>
+<link rel=stylesheet href=static/style.css>
+</head>
+<table width=100% height=100%><tr><td align=center valign=center>
+<img id=image><br>
+<div id=caption>posted by <span id=owner></span></div>
+</td></tr></table>
+
+<script>
+if (!('JSON' in window)) {
+  // Opera FFFFUUUUUU
+  JSON = {
+    parse: function(text) {
+      return eval('(' + text + ')');
+    }
+  };
+}
+
+function display(state) {
+  document.getElementById('image').src = state.image;
+  document.getElementById('owner').innerHTML = state.owner;
+}
+function update() {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200)
+        display(JSON.parse(xhr.responseText));
+      scheduleUpdate();
+    }
+  }
+  xhr.open('GET', '/json', true);
+  xhr.send();
+}
+function scheduleUpdate() {
+  setTimeout(update, 3 * 1000);
+}
+
+display({{ json }});
+scheduleUpdate();
+</script>
