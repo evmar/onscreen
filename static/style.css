@@ -1,5 +1,6 @@
 body {
   font-family: Inconsolata, sans-serif;
+  background: #ddd;
   margin: 4em;
 }
 input {
@@ -8,8 +9,4 @@ input {
 
 h1 {
   font-weight: normal;
-}
-
-#caption {
-  font-size: 150%;
 }
