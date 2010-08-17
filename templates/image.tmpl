@@ -50,5 +50,6 @@ function scheduleUpdate() {
 }
 
 display({{ json }});
-scheduleUpdate();
+if ({{cycle}})
+  scheduleUpdate();
 </script>

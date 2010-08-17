@@ -95,8 +95,9 @@ try:
         if path == '/':
             print template.render('templates/frontpage.tmpl', {})
         elif path == '/cycle':
-            print template.render('templates/cycler.tmpl',
-                                  { 'json':current_json() })
+            print template.render('templates/image.tmpl',
+                                  { 'json': current_json(),
+                                    'cycle': 1 })
         elif path == '/new':
             headers = new()
         elif path.startswith('/image/'):
