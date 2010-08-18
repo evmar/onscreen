@@ -6,7 +6,6 @@ body {
   font-family: sans-serif;
 }
 #display {
-  -webkit-box-shadow: 5px 5px 4px #777;
   margin-bottom: 20px;
 }
 #caption {
@@ -15,7 +14,7 @@ body {
 </style>
 </head>
 <table width=100% height=100%><tr><td align=center valign=center>
-<div id=display><br>
+<div id=display></div>
 <div id=caption>posted by <span id=owner></span></div>
 </td></tr></table>
 
@@ -29,7 +28,14 @@ if (!('JSON' in window)) {
   };
 }
 
+var cur_id = -1;
+
 function display(state) {
+  if ('id' in state) {
+    if (state.id == cur_id)
+      return;
+    cur_id = state.id;
+  }
   if ('url' in state) {
     document.getElementById('display').innerHTML =
       '<object width="480" height="385"><param name="movie" value="' + state.url + '"></param></object>';

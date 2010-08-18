@@ -52,16 +52,17 @@ def get_current_entry():
 
 def current_json():
     entry = get_current_entry()
-    if entry and entry.url:
-        return json.dumps({
-                'url': entry.url,
-                'owner': entry.owner.nickname(),
-                })
-    elif entry:
-        return json.dumps({
-                'image': '/image/%d' % entry.key().id(),
-                'owner': entry.owner.nickname(),
-                })
+    if entry:
+        data = {
+            'owner': entry.owner.nickname(),
+            'id': entry.key().id()
+            }
+
+        if entry.url:
+            data['url'] = entry.url
+        elif entry.image:
+            data['image'] = '/image/%d' % entry.key().id()
+        return json.dumps(data)
     else:
         return "{}"
 
