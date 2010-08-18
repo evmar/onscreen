@@ -1,0 +1,10 @@
+{
+  "name": "On Screen",
+  "version": "1",
+  "description": "On screen!",
+
+  "background_page": "background.html",
+  "permissions": [
+    "contextMenus"
+  ]
+}

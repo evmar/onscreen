@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<form id=form action='http://on-screen.appspot.com/new' method=POST target=_blank>
+<input id=url type=hidden name=url>
+</form>
+<script>
+chrome.contextMenus.create({
+  type: 'normal',
+  title: 'On screen!',
+  contexts: ['image'],
+  onclick: function(info, tab) {
+    document.getElementById('url').value = info.srcUrl;
+    document.getElementById('form').submit();
+  }
+});
+</script>
