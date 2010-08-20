@@ -1,0 +1,4 @@
+- when server accepts a url, decide whether it's an image or not for embed
+- server-side image resizing
+- chrome extension needs to POST and needs server support
+- python uploader needs to POST
