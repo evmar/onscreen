@@ -13,8 +13,8 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import template
 
 DISPLAY_N_RECENT = 5
-CYCLE_TIME = 30
-ENTRIES_NEWER_THAN_HOURS = 12
+CYCLE_TIME_SECONDS = 30
+ENTRIES_NEWER_THAN_HOURS = 6
 
 class Entry(db.Model):
     owner = db.UserProperty(required=True)
@@ -41,11 +41,20 @@ def get_current_entry():
         state = State(slot=0, since=now)
         state.put()
     else:
-        if (now - state.since > timedelta(seconds=CYCLE_TIME)  # time to cycle?
-            or state.slot >= len(entries)):                    # entry expired?
-            state.slot = (state.slot + 1) % min(len(entries), DISPLAY_N_RECENT)
-            state.since = now
-            state.put()
+        # If the newest image was uploaded recently, keep it up for 15 minutes.
+        if entries[0].date > now - timedelta(minutes=15):
+            if state.slot != 0:
+                state.slot = 0
+                state.since = now
+                state.put()
+        else:
+            # No recent image -- We're in the "cycling" state.  See if
+            # it's time to cycle.
+            if (now - state.since > timedelta(seconds=CYCLE_TIME_SECONDS)
+                or state.slot >= len(entries)):                # entry expired?
+                state.slot = (state.slot + 1) % min(len(entries), DISPLAY_N_RECENT)
+                state.since = now
+                state.put()
 
     return entries[state.slot]
 
