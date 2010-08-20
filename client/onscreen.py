@@ -12,8 +12,8 @@ grab_win.show()
 screen = gtk.gdk.screen_get_default()
 root_win = screen.get_root_window()
 
-sel_win = gtk.Window(gtk.WINDOW_POPUP)
-sel_win.set_default_size(0, 0)
+sel_win = gtk.gdk.Window(root_win, 0, 0, gtk.gdk.WINDOW_TEMP, 0,
+                         gtk.gdk.INPUT_OUTPUT, override_redirect=True)
 sel_win.show()
 
 x1 = y1 = x2 = y2 = None
@@ -31,8 +31,9 @@ def motion(widget, event):
     w = max(abs(x - x1), 1)
     h = max(abs(y - y1), 1)
     sel_win.resize(w, h)
-    shape = gtk.gdk.region_rectangle((1, 1, w - 2, h - 2))
-    sel_win.window.shape_combine_region(shape, 0, 0)
+    shape = gtk.gdk.region_rectangle((0, 0, w, h))
+    shape.subtract(gtk.gdk.region_rectangle((1, 1, w - 2, h - 2)))
+    sel_win.shape_combine_region(shape, 0, 0)
 
 def stop_drag(widget, event):
     gtk.gdk.pointer_ungrab(time=event.time)
