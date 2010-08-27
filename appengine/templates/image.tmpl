@@ -43,11 +43,11 @@ function display(state) {
 
   } else if ('image' in state) {
     document.getElementById('display').innerHTML =
-        '<img src=' + state.image + '>';
+        '<img src="' + state.image + '?{{query}}">';
     document.getElementById('owner').innerHTML = state.owner;
   } else {
-    document.getElementById('image').src = 'XXX';
-    document.getElementById('owner').innerHTML = 'RAN OUT OF IMAGES :(';
+    document.getElementById('display').innerHTML = 'no images :(';
+    document.getElementById('owner').innerHTML = '';
   }
 }
 function update() {
@@ -59,7 +59,7 @@ function update() {
       scheduleUpdate();
     }
   }
-  xhr.open('GET', '/json', true);
+  xhr.open('GET', '/json' + location.search, true);
   xhr.send();
 }
 function scheduleUpdate() {

@@ -129,6 +129,7 @@ def handle_request(path):
     elif path == '/cycle':
         print template.render('templates/image.tmpl',
                               { 'json': current_json(),
+                                'query': os.environ.get('QUERY_STRING', ''),
                                 'cycle': 1 })
     elif path == '/new':
         return new(path)
