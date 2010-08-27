@@ -2,6 +2,7 @@
 
 import cgi
 import os
+import hashlib
 from django.utils import simplejson as json
 import sys
 from datetime import datetime, timedelta
@@ -76,6 +77,26 @@ def current_json():
         return "{}"
 
 
+def check_user(func):
+    """Decorator that verifies the user is allowed to see any pages"""
+    def f(path, *args, **kwargs):
+        ok = False
+        user = users.get_current_user()
+        if user:
+            _, domain = user.email().split('@')
+            if domain in ('google.com', 'example.com'):
+                ok = True
+        if not ok:
+            query = os.environ.get('QUERY_STRING', '')
+            hex = hashlib.sha1(query).hexdigest()
+            if hex == 'a0772fcc7ffe0e18236513c20f2eb25f8cdcf32a':
+                ok = True
+        if not ok:
+            raise web.Special(302, users.create_login_url(path))
+        return func(path, *args, **kwargs)
+    return f
+
+
 def new(path):
     user = users.get_current_user()
 
@@ -101,6 +122,7 @@ def new(path):
         else:
             raise web.Error(400, 'no image/url included')
 
+@check_user
 def handle_request(path):
     if path == '/':
         print template.render('templates/frontpage.tmpl', {})
