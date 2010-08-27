@@ -109,17 +109,17 @@ def handle_request(path):
                               { 'json': current_json(),
                                 'cycle': 1 })
     elif path == '/new':
-        headers = new(path)
+        return new(path)
     elif path.startswith('/image/'):
         id = int(path[len('/image/'):])
         entry = Entry.get_by_id(id)
         if not entry:
             raise web.Error(404)
-        headers = {}
         print entry.image
+        return {}
     elif path == '/json':
-        headers = {'Content-Type': 'application/json'}
         print current_json()
+        return {'Content-Type': 'application/json'}
     else:
         raise web.Error(404)
 
