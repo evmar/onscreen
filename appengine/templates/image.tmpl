@@ -43,11 +43,29 @@ function display(state) {
 
   } else if ('image' in state) {
     document.getElementById('display').innerHTML =
-        '<img src="' + state.image + '?{{query}}">';
+        '<img src="' + state.image + '?{{query}}" id="image">';
     document.getElementById('owner').innerHTML = state.owner;
+    window.setTimeout(setImageSize, 0);
   } else {
     document.getElementById('display').innerHTML = 'no images :(';
     document.getElementById('owner').innerHTML = '';
+  }
+}
+function setImageSize() {
+  var image = document.getElementById('image');
+  var kMaxWidth = 500;
+  var kMaxHeight = 385;
+  if (image.width == 0) {
+    window.setTimeout(setImageSize, 10);
+  }
+  var widthScale = image.width / kMaxWidth;
+  var heightScale = image.height / kMaxHeight;
+  if (widthScale > 1 || heightScale > 1) {
+    if (widthScale > heightScale) {
+      image.width = kMaxWidth;
+    } else {
+      image.height = kMaxHeight;
+    }
   }
 }
 function update() {
