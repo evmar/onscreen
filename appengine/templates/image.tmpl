@@ -43,7 +43,8 @@ function display(state) {
 
   } else if ('image' in state) {
     document.getElementById('display').innerHTML =
-        '<img src="' + state.image + '?{{query}}" id="image">';
+        '<img onload="setImageSize(this)" ' +
+             'src="' + state.image + '?{{query}}" id="image">';
     document.getElementById('owner').innerHTML = state.owner;
     window.setTimeout(setImageSize, 0);
   } else {
@@ -51,13 +52,9 @@ function display(state) {
     document.getElementById('owner').innerHTML = '';
   }
 }
-function setImageSize() {
-  var image = document.getElementById('image');
-  var kMaxWidth = 500;
+function setImageSize(image) {
+  var kMaxWidth = 600;
   var kMaxHeight = 385;
-  if (image.width == 0) {
-    window.setTimeout(setImageSize, 10);
-  }
   var widthScale = image.width / kMaxWidth;
   var heightScale = image.height / kMaxHeight;
   if (widthScale > 1 || heightScale > 1) {
